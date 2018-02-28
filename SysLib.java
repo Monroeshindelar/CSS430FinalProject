@@ -124,34 +124,35 @@ public class SysLib {
 
     //not done
     public static int open(String fileName, String mode) {
-        return Kernel.interrupt(1,Kernel.FORMAT, 0, mode);
+        String[] temp = new String[]{fileName,mode};
+        return Kernel.interrupt(1,Kernel.OPEN, 0, temp);
     }
 
     public static int read(int fd, byte buffer[]) {
-        return Kernel.interrupt(1,Kernel.FORMAT, fd, buffer);
+        return Kernel.interrupt(1,Kernel.READ, fd, buffer);
     }
 
     public static int write(int fd, byte buffer[]) {
-        return Kernel.interrupt(1,Kernel.FORMAT, fd, buffer);
+        return Kernel.interrupt(1,Kernel.WRITE, fd, buffer);
     }
 
-    //not done
+
     public static int seek(int fd, int offset, int whence)  {
         if(offset < 0) offset = 0;
-
-        return Kernel.interrupt(1,Kernel.FORMAT, fd, (Object)null);
+        int[] temp = new int[]{offset, whence};
+        return Kernel.interrupt(1,Kernel.SEEK, fd, temp);
     }
 
     public static int close(int fd) {
-        return Kernel.interrupt(1,Kernel.FORMAT, fd, (Object)null);
+        return Kernel.interrupt(1,Kernel.CLOSE, fd, (Object)null);
     }
 
     public static int delete(String fileName) {
-        return Kernel.interrupt(1,Kernel.FORMAT, 0, fileName);
+        return Kernel.interrupt(1,Kernel.DELETE, 0, fileName);
     }
 
     public static int fsize(int fd) {
-        return Kernel.interrupt(1,Kernel.FORMAT, fd, (Object)null);
+        return Kernel.interrupt(1,Kernel.SIZE, fd, (Object)null);
     }
 
 }
