@@ -4,7 +4,10 @@ class SuperBlock {
     public int freeList;
 
     public SuperBlock(int diskSize) {
-        totalBlocks = diskSize / 512;
-
+        byte[] sb = new byte[512];
+        SysLib.rawread(0, sb);
+        totalBlocks = SysLib.bytes2int(sb, 0);
+        totalInodes = SysLib.bytes2int(sb, 4);
+        freeList = SysLib.bytes2int(sb, 8);
     }
 }
