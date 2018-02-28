@@ -119,37 +119,39 @@ public class SysLib {
     //implement all below
 
     public static int format(int files) {
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, files, (Object)null);
     }
 
+    //not done
     public static int open(String fileName, String mode) {
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, 0, mode);
     }
 
     public static int read(int fd, byte buffer[]) {
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, fd, buffer);
     }
 
     public static int write(int fd, byte buffer[]) {
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, fd, buffer);
     }
 
+    //not done
     public static int seek(int fd, int offset, int whence)  {
         if(offset < 0) offset = 0;
 
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, fd, (Object)null);
     }
 
     public static int close(int fd) {
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, fd, (Object)null);
     }
 
     public static int delete(String fileName) {
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, 0, fileName);
     }
 
     public static int fsize(int fd) {
-        return -1;
+        return Kernel.interrupt(1,Kernel.FORMAT, fd, (Object)null);
     }
 
 }
