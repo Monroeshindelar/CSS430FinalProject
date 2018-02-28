@@ -1,4 +1,3 @@
-import java.io.File;
 
 public class FileSystem {
     private SuperBlock superblock;
@@ -18,7 +17,6 @@ public class FileSystem {
             dir.bytes2directory(dirData);
         }
         close(dirEnt);
-
     }
 
     void sync() {
