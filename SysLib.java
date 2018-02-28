@@ -135,6 +135,8 @@ public class SysLib {
     }
 
     public static int seek(int fd, int offset, int whence)  {
+        if(offset < 0) offset = 0;
+
         return -1;
     }
 

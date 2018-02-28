@@ -4,6 +4,7 @@ class SuperBlock {
     public int freeList;
 
     public SuperBlock(int diskSize) {
+        totalBlocks = diskSize / 512;
 
     }
 }
