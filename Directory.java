@@ -20,9 +20,9 @@ public class Directory {
             offset += 4;
         }
         for(int i = 0; i < fnames.length; i++) {
-            for(int j = 0; j < maxChars; j++) {
-                //convert the bytes to chars
-            }
+            String names = new String(data, offset, maxChars*2);
+            names.getChars(0, fsize[i], fnames[i], 0);
+            offset += maxChars*2;
         }
 
     }
@@ -37,8 +37,8 @@ public class Directory {
         for(int i = 0; i < fnames.length; i++) {
             char[] temp = new char[maxChars];
             for(int j = 0; j < maxChars; j++) temp[j] = fnames[i][j];
-            //convert char array into bytes
-
+            byte[] converted = new String(temp).getBytes();
+            for(int j = 0; j < converted.length; j++) buffer[offset++] = converted[i];
         }
         return buffer;
     }
