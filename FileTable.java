@@ -10,11 +10,30 @@ public class FileTable {
     }
 
     public synchronized FileTableEntry falloc(String fileName, String mode) {
-        return null;
+        short iNumber = dir.namei(fileName);
+        FileTableEntry retVal = null;
+        Inode node = null;
+
+        if(iNumber < 0) iNumber = dir.ialloc(fileName);
+
+        node = new Inode(iNumber);
+        node.count++;
+
+        retVal = new FileTableEntry(node, iNumber, mode);
+        table.add(retVal);
+        return retVal;
     }
 
     public synchronized boolean ffree(FileTableEntry e) {
-        return false;
+        boolean retVal = false;
+        e.inode.count--;
+        e.inode.toDisk(e.iNumber);
+        int index = table.indexOf(e);
+        if(index >= 0)  {
+            retVal = true;
+            table.set(index, null);
+        }
+        return retVal;
     }
 
     public synchronized boolean fempty() {
