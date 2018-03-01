@@ -44,7 +44,14 @@ public class Directory {
     }
 
     public short ialloc(String filename) {
-
+        for(short i = 0; i < fsize.length; i++) {
+            if(fsize[i] == 0) {
+                fsize[i] = (maxChars > filename.length()) ? filename.length() : maxChars;
+                filename.getChars(0, fsize[i], fnames[i], 0);
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean ifree(short iNumber) {
