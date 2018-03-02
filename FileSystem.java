@@ -28,7 +28,8 @@ public class FileSystem {
     }
 
     FileTableEntry open(String fileName, String mode) {
-        return null;
+        FileTableEntry retVal = null;
+        return retVal;
     }
 
     boolean close(FileTableEntry ftEnt) {
@@ -40,6 +41,7 @@ public class FileSystem {
     }
 
     int read(FileTableEntry ftEnt, byte[] buffer) {
+
         return -1;
     }
 
