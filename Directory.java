@@ -55,7 +55,20 @@ public class Directory {
     }
 
     public boolean ifree(short iNumber) {
+        boolean retVal = false;
+        if(fsize[iNumber] > 0) {
+            fsize[iNumber] = 0;
+            retVal = true;
+        }
+        return retVal;
+    }
 
+    public short namei(String filename) {
+        for(short i = 0; i < fnames.length; i++) {
+            String current = new String(fnames[i], 0, fsize[i]);
+            if(filename.equals(current)) return i;
+        }
+        return -1;
     }
 
 
