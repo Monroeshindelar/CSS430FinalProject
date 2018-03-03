@@ -5,6 +5,10 @@ public class FileSystem {
     private Directory dir;
     private FileTable fileTable;
 
+    public final static int SEEK_SET    =  0;
+    public final static int SEEK_CUR    =  1;
+    public final static int SEEK_END    =  2;
+
     public FileSystem(int diskBlocks) {
         superblock = new SuperBlock(diskBlocks);
         dir = new Directory(superblock.totalInodes);
@@ -34,6 +38,8 @@ public class FileSystem {
     }
 
     boolean close(FileTableEntry ftEnt) {
+
+        ftEnt.count--;
         return false;
     }
 
@@ -56,7 +62,8 @@ public class FileSystem {
         return -1;
     }
 
-    int write(FileTableEntry ftEnt, byte[] buffer) {
+    int write(FileTableEntry ftEnt, byte[] buffer)
+    {
         return -1;
     }
 
@@ -71,11 +78,35 @@ public class FileSystem {
         return true;
     }
 
-    private final int SEEK_SET = 0;
-    private final int SEEK_CUR = 1;
-    private final int SEEK_END = 2;
-
     int seek(FileTableEntry ftEnt, int offset, int whence) {
-        return -1;
+
+        switch(whence)
+        {
+            case SEEK_SET:
+                ftEnt.seekPtr = offset;
+                break;
+            case SEEK_CUR:
+                ftEnt.seekPtr += offset;
+                break;
+            case SEEK_END:
+                ftEnt.seekPtr = ftEnt.inode.length + offset;
+                break;
+            default:
+                return -1;
+
+
+        }
+
+        if (ftEnt.seekPtr <0)
+        {
+            ftEnt.seekPtr = 0;
+        }
+
+        if (ftEnt.seekPtr > ftEnt.inode.length)
+        {
+            ftEnt.seekPtr = ftEnt.inode.length;
+        }
+
+        return ftEnt.seekPtr;
     }
 }
