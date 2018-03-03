@@ -1,12 +1,13 @@
 
 public class FileSystem {
+    private final int BLOCK_SIZE = 512;
     private SuperBlock superblock;
     private Directory dir;
     private FileTable fileTable;
 
     public FileSystem(int diskBlocks) {
         superblock = new SuperBlock(diskBlocks);
-        dir = new Directory(32); //superblock.inodeBlocks ? what is this?
+        dir = new Directory(superblock.totalInodes);
         fileTable = new FileTable(dir);
 
         FileTableEntry dirEnt = open("/", "r");
@@ -28,7 +29,7 @@ public class FileSystem {
     }
 
     FileTableEntry open(String fileName, String mode) {
-        FileTableEntry retVal = null;
+        FileTableEntry retVal = fileTable.falloc(fileName, mode);
         return retVal;
     }
 
@@ -37,11 +38,21 @@ public class FileSystem {
     }
 
     int fsize(FileTableEntry ftEnt) {
-        return -1;
+        synchronized(ftEnt){ return ftEnt.inode.length; }
     }
 
     int read(FileTableEntry ftEnt, byte[] buffer) {
+        if(ftEnt.mode == "r" || ftEnt.mode == "w+") {
+            int count = 0;
+            int i = buffer.length;
+            synchronized(ftEnt) {
+                while(i > 0 && ftEnt.seekPtr < fsize(ftEnt)) {
+                    byte[] currentBlock = new byte[BLOCK_SIZE];
+                    SysLib.rawread(ftEnt.iNumber, currentBlock);
 
+                }
+            }
+        }
         return -1;
     }
 
@@ -54,7 +65,10 @@ public class FileSystem {
     }
 
     boolean delete(String fileName) {
-        return false;
+        Inode current = new Inode(dir.namei(fileName));
+        if(current.count > 0) return false;
+        dir.ifree(dir.namei(fileName));
+        return true;
     }
 
     private final int SEEK_SET = 0;
