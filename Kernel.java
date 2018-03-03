@@ -54,6 +54,9 @@ public class Kernel
 	private static SyncQueue waitQueue;  // for threads to wait for their child
 	private static SyncQueue ioQueue;    // I/O queue
 
+	//Filesystem
+	private static FileSystem fs;
+
 	private final static int COND_DISK_REQ = 1; // wait condition
 	private final static int COND_DISK_FIN = 2; // wait condition
 
@@ -71,6 +74,9 @@ public class Kernel
 						// instantiate and start a scheduler
 						scheduler = new Scheduler( );
 						scheduler.start( );
+
+						// instantiate File System
+						fs = new FileSystem(1000);
 
 						// instantiate and start a disk
 						disk = new Disk( 1000 );
@@ -167,17 +173,25 @@ public class Kernel
 						cache.flush( );
 						return OK;
 					case OPEN:    // to be implemented in project
-						return OK;
+						if((myTcb = scheduler.getMyTcb()) != null) {
+							String[] fName = (String[])((String[])args);
+							return myTcb.getFd(fs.open(fName[0], fName[1]));
+						}
+						return ERROR;
 					case CLOSE:   // to be implemented in project
-						return OK;
+						if((myTcb = scheduler.getMyTcb()) != null) if(fs.close(myTcb.getFtEnt(param))) return OK;
+						return ERROR;
 					case SIZE:    // to be implemented in project
-						return OK;
+						if((myTcb = scheduler.getMyTcb()) != null) return fs.fsize(myTcb.getFtEnt(param));
+						return ERROR;
 					case SEEK:    // to be implemented in project
 						return OK;
 					case FORMAT:  // to be implemented in project
-						return OK;
+						if((myTcb = scheduler.getMyTcb()) != null) if(fs.format(param)) return OK;
+						return ERROR;
 					case DELETE:  // to be implemented in project
-						return OK;
+						if((myTcb = scheduler.getMyTcb()) != null) if(fs.delete((String)args)) return OK;
+						return ERROR;
 				}
 				return ERROR;
 			case INTERRUPT_DISK: // Disk interrupts
