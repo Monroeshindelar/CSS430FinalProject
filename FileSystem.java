@@ -1,6 +1,5 @@
 
 public class FileSystem {
-    private final int BLOCK_SIZE = 512;
     private SuperBlock superblock;
     private Directory dir;
     private FileTable fileTable;
@@ -25,7 +24,11 @@ public class FileSystem {
     }
 
     void sync() {
-
+        FileTableEntry root = open("/", "w");
+        byte[] dirInBytes = dir.directory2bytes();
+        write(root, dirInBytes);
+        close(root);
+        superblock.sync();
     }
 
     boolean format(int files) {
@@ -38,9 +41,11 @@ public class FileSystem {
     }
 
     boolean close(FileTableEntry ftEnt) {
-
-        ftEnt.count--;
-        return false;
+        synchronized (ftEnt) {
+            ftEnt.count--;
+            if(ftEnt.count > 0) return true;
+        }
+        return fileTable.ffree(ftEnt);
     }
 
     int fsize(FileTableEntry ftEnt) {
@@ -53,21 +58,22 @@ public class FileSystem {
             int i = buffer.length;
             synchronized(ftEnt) {
                 while(i > 0 && ftEnt.seekPtr < fsize(ftEnt)) {
-                    byte[] currentBlock = new byte[BLOCK_SIZE];
+                    byte[] currentBlock = new byte[512];
                     SysLib.rawread(ftEnt.iNumber, currentBlock);
 
                 }
+                return count;
             }
         }
         return -1;
     }
 
-    int write(FileTableEntry ftEnt, byte[] buffer)
-    {
+    int write(FileTableEntry ftEnt, byte[] buffer) {
         return -1;
     }
 
     private boolean deallocAllBlocks(FileTableEntry ftEnt) {
+
         return false;
     }
 
@@ -79,34 +85,24 @@ public class FileSystem {
     }
 
     int seek(FileTableEntry ftEnt, int offset, int whence) {
+        synchronized (ftEnt) {
+            switch (whence) {
+                case SEEK_SET:
+                    ftEnt.seekPtr = offset;
+                    break;
+                case SEEK_CUR:
+                    ftEnt.seekPtr += offset;
+                    break;
+                case SEEK_END:
+                    ftEnt.seekPtr = ftEnt.inode.length + offset;
+                    break;
+                default:
+                    return -1;
+            }
 
-        switch(whence)
-        {
-            case SEEK_SET:
-                ftEnt.seekPtr = offset;
-                break;
-            case SEEK_CUR:
-                ftEnt.seekPtr += offset;
-                break;
-            case SEEK_END:
-                ftEnt.seekPtr = ftEnt.inode.length + offset;
-                break;
-            default:
-                return -1;
-
-
+            if (ftEnt.seekPtr < 0) ftEnt.seekPtr = 0;
+            if (ftEnt.seekPtr > ftEnt.inode.length) ftEnt.seekPtr = ftEnt.inode.length;
+            return ftEnt.seekPtr;
         }
-
-        if (ftEnt.seekPtr <0)
-        {
-            ftEnt.seekPtr = 0;
-        }
-
-        if (ftEnt.seekPtr > ftEnt.inode.length)
-        {
-            ftEnt.seekPtr = ftEnt.inode.length;
-        }
-
-        return ftEnt.seekPtr;
     }
 }

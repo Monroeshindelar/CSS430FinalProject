@@ -10,4 +10,12 @@ class SuperBlock {
         totalInodes = SysLib.bytes2int(sb, 4);
         freeList = SysLib.bytes2int(sb, 8);
     }
+
+    void sync() {
+        byte[] buffer = new byte[512];
+        SysLib.int2bytes(totalBlocks, buffer, 0);
+        SysLib.int2bytes(totalInodes, buffer, 4);
+        SysLib.int2bytes(freeList, buffer, 8);
+        SysLib.rawwrite(0, buffer);
+    }
 }
