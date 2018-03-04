@@ -44,6 +44,29 @@ public class Inode {
         return SysLib.rawwrite(iNumber, buffer);
     }
 
+    short getIndexBlockNumber() {
+        return indirect;
+    }
+
+    boolean setIndexBlock(short indexBlockNumber) {
+        if(indirect != -1) return false;
+        for(int i = 0; i < direct.length; i++) if(direct[i] == -1) return false;
+        byte[] buffer = new byte[512];
+        for(int i = 0; i < (buffer.length) / 2; i++) SysLib.short2bytes((short)-1, buffer, i*2);
+        SysLib.rawwrite(indexBlockNumber, buffer);
+        return true;
+    }
+
+    short findTargetBlock(int offset) {
+        int block = 512 / offset;
+        if(block < 0) return -1;
+        else if(block < 11) return direct[block];
+        else {
+            byte[] buffer = new byte[512];
+            SysLib.rawread(indirect, buffer);
+            return SysLib.bytes2short(buffer, (block - 11) * 2);
+        }
+    }
 }
 
 
