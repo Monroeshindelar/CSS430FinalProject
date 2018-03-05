@@ -1,6 +1,6 @@
 public class Inode {
     private final static int iNodeSize = 32;
-    private final static int directSize = 11;
+    public final static int directSize = 11;
 
     public int length; //filesize
     public short count; //# of fds referencing this inode
@@ -66,6 +66,15 @@ public class Inode {
             SysLib.rawread(indirect, buffer);
             return SysLib.bytes2short(buffer, (block - 11) * 2);
         }
+    }
+
+    byte[] freeIndirectBlock() {
+        if(indirect == -1) return null;
+
+        byte[] buffer = new byte[512];
+        SysLib.rawread(indirect, buffer);
+        indirect = -1;
+        return buffer;
     }
 }
 
