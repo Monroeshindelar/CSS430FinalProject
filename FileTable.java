@@ -10,18 +10,84 @@ public class FileTable {
     }
 
     public synchronized FileTableEntry falloc(String fileName, String mode) {
-        short iNumber = dir.namei(fileName);
-        FileTableEntry retVal = null;
-        Inode node = null;
+        short nodeNum = -1;
+        Inode inode = null;
 
-        if(iNumber < 0) iNumber = dir.ialloc(fileName);
+        while (true)
+        {
+            //get inode number from file
+            if (fileName.equals("/"))
+            {
+                nodeNum = 0;
+            }
+            else
+            {
+                nodeNum = dir.namei(fileName);
+            }
 
-        node = new Inode(iNumber);
-        node.count++;
+            // check if file exists
+            if (nodeNum >= 0)
+            {
 
-        retVal = new FileTableEntry(node, iNumber, mode);
-        table.add(retVal);
-        return retVal;
+                inode = new Inode(nodeNum);
+
+                // if mode is read
+                if (mode.equals("r"))
+                {
+                    //if file is being written to
+                    if (inode.flag != 0 || inode.flag != 1 )
+                    {
+                        //wait until writing is done
+                        try
+                        {
+                            wait();
+                        }
+                        catch (InterruptedException e) { }
+                        continue;
+                    }
+                    //set flag to read
+                    inode.flag = 1;
+                    break;
+                }
+                else
+                {
+                    if (inode.flag == 0 || inode.flag == 1)
+                    {
+                        inode.flag = 3;
+                        break;
+                    }
+                    //wait until writing is done
+                    else
+                    {
+                        try
+                        {
+                            wait();
+                        }
+                        catch (InterruptedException e) { }
+                    }
+                }
+            }
+            //if mode is read then return a null
+            if (mode.equals("r"))
+            {
+                return null;
+            }
+
+            //create file
+            nodeNum = dir.ialloc(fileName);
+            inode = new Inode(nodeNum);
+            //set flag to write
+            inode.flag = 3;
+            break;
+        }
+
+        //write inode to disk
+        inode.count++;
+        inode.toDisk(nodeNum);
+        //create filetable entry and return
+        FileTableEntry ftEnt = new FileTableEntry(inode, nodeNum, mode);
+        table.addElement(ftEnt);
+        return ftEnt;
     }
 
     public synchronized boolean ffree(FileTableEntry e) {
