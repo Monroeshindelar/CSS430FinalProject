@@ -28,7 +28,40 @@ class SuperBlock {
     }
 
     public void format(int files) {
+        //number of files
+        totalInodes = files;
 
+        //loop through all inodes
+        for (short i = 0; i < totalInodes; i++)
+        {
+            //create new inode
+            Inode tempNode = new Inode();
+
+            //set flag to unused
+            tempNode.flag = 0;
+
+            //write to disk
+            tempNode.toDisk(i);
+        }
+
+        //start free list at the end of inodes
+        freeList = (totalInodes /16) +2;
+
+        //starting at the end of free list till end
+        for (int i = freeList; i < totalBlocks; i++)
+        {
+            byte[] temp = new byte[BLOCK_SIZE];
+
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                temp[j] = 0;
+            }
+
+            SysLib.int2bytes(i+1, temp, 0);
+            SysLib.rawwrite(i,temp);
+        }
+
+        sync();
     }
 
     public int getFreeBlock() {
