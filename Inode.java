@@ -68,6 +68,7 @@ public class Inode {
         }
     }
 
+    //sometimes intellij sucks
     byte[] freeIndirectBlock() {
         if(indirect == -1) return null;
 
