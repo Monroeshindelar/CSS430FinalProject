@@ -32,12 +32,32 @@ public class FileSystem {
     }
 
     boolean format(int files) {
-        return false;
+
+        superblock.format(files);
+
+        dir = new Directory(superblock.totalInodes);
+
+        fileTable = new FileTable(dir);
+
+        return true;
     }
 
     FileTableEntry open(String fileName, String mode) {
-        FileTableEntry retVal = fileTable.falloc(fileName, mode);
-        return retVal;
+        //allocate a new filetable entry
+        FileTableEntry ftEnt = fileTable.falloc(fileName, mode);
+
+        //if writing
+        if (mode.equals ("w"))
+        {
+            //make sure blocks are unallocated
+            if (!deallocAllBlocks(ftEnt))
+            {
+                //if deallocating didn't succeed then return null
+                return null;
+            }
+        }
+
+        return ftEnt;
     }
 
     boolean close(FileTableEntry ftEnt) {
@@ -74,12 +94,48 @@ public class FileSystem {
 
     private boolean deallocAllBlocks(FileTableEntry ftEnt) {
 
-        return false;
+        if (ftEnt.inode.count != 1)
+        {
+            return false;
+        }
+
+        //loop through al inode blocks
+        for (int i = 0; i < ftEnt.inode.directSize; i++)
+        {
+            //set them all to -1
+            if (ftEnt.inode.direct[i] != -1)
+            {
+               superblock.returnBlock(i);
+               ftEnt.inode.direct[i] = -1;
+            }
+        }
+
+        //
+        byte [] tempData = ftEnt.inode.freeIndirectBlock();
+
+        if (tempData != null)
+        {
+            short tempId;
+
+            //loop through all valid
+            while((tempId = SysLib.bytes2short(tempData,0))!= -1)
+            {
+                return superblock.returnBlock(tempId);
+            }
+        }
+        //write inodes back to disk
+        ftEnt.inode.toDisk(ftEnt.iNumber);
+        return true;
     }
 
     boolean delete(String fileName) {
+        //find file
         Inode current = new Inode(dir.namei(fileName));
+
+        //if currently being used then do not delete
         if(current.count > 0) return false;
+
+        //remove from directory
         dir.ifree(dir.namei(fileName));
         return true;
     }
@@ -87,12 +143,16 @@ public class FileSystem {
     int seek(FileTableEntry ftEnt, int offset, int whence) {
         synchronized (ftEnt) {
             switch (whence) {
+                //set to beginning
                 case SEEK_SET:
                     ftEnt.seekPtr = offset;
                     break;
+
+                //set to current
                 case SEEK_CUR:
                     ftEnt.seekPtr += offset;
                     break;
+                //set to end of file
                 case SEEK_END:
                     ftEnt.seekPtr = ftEnt.inode.length + offset;
                     break;
@@ -100,7 +160,10 @@ public class FileSystem {
                     return -1;
             }
 
+            //if seek ptr below 0 set to a valid seekptr
             if (ftEnt.seekPtr < 0) ftEnt.seekPtr = 0;
+
+            //if pointer is greater than file length then set it to end of file
             if (ftEnt.seekPtr > ftEnt.inode.length) ftEnt.seekPtr = ftEnt.inode.length;
             return ftEnt.seekPtr;
         }

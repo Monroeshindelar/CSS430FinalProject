@@ -175,14 +175,27 @@ public class Kernel
 					case OPEN:    // to be implemented in project
 						if((myTcb = scheduler.getMyTcb()) != null) {
 							String[] fName = (String[])((String[])args);
-							return myTcb.getFd(fs.open(fName[0], fName[1]));
+							FileTableEntry temp = fs.open(fName[0], fName[1]);
+							if (temp == null)
+							{
+								return ERROR;
+							}
+							return myTcb.getFd(temp);
 						}
 						return ERROR;
 					case CLOSE:   // to be implemented in project
 						if((myTcb = scheduler.getMyTcb()) != null) if(fs.close(myTcb.getFtEnt(param))) return OK;
 						return ERROR;
 					case SIZE:    // to be implemented in project
-						if((myTcb = scheduler.getMyTcb()) != null) return fs.fsize(myTcb.getFtEnt(param));
+						if((myTcb = scheduler.getMyTcb()) != null)
+						{
+							FileTableEntry temp = myTcb.getFtEnt( param );
+							if ( temp == null )
+							{
+								return ERROR;
+							}
+							return fs.fsize(temp);
+						}
 						return ERROR;
 					case SEEK:    // to be implemented in project
 						return OK;
