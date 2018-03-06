@@ -32,13 +32,9 @@ public class FileSystem {
     }
 
     boolean format(int files) {
-
         superblock.format(files);
-
         dir = new Directory(superblock.totalInodes);
-
         fileTable = new FileTable(dir);
-
         return true;
     }
 
@@ -73,19 +69,30 @@ public class FileSystem {
     }
 
     int read(FileTableEntry ftEnt, byte[] buffer) {
-        if(ftEnt.mode == "r" || ftEnt.mode == "w+") {
-            int count = 0;
-            int i = buffer.length;
-            synchronized(ftEnt) {
-                while(i > 0 && ftEnt.seekPtr < fsize(ftEnt)) {
-                    byte[] currentBlock = new byte[512];
-                    SysLib.rawread(ftEnt.iNumber, currentBlock);
+        if(ftEnt.mode == "w" || ftEnt.mode == "a") return -1;
+        int count = 0;
+        int size = buffer.length;
+        int bytesRead = 0;
+        synchronized(ftEnt) {
+            while(size > 0 && ftEnt.seekPtr < fsize(ftEnt)) {
+                int current = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+                if(current == -1) break;
 
-                }
-                return count;
+                byte[] currentBlock = new byte[512];
+                SysLib.rawread(ftEnt.iNumber, currentBlock);
+
+                int offset = ftEnt.seekPtr % 512;
+                int blocksRemaining = 512 - bytesRead;
+                int fileRemaining = fsize(ftEnt) - ftEnt.seekPtr;
+
+                bytesRead = Math.min(((blocksRemaining < fileRemaining) ? blocksRemaining : fileRemaining), size);
+                System.arraycopy(currentBlock, offset, buffer, count, bytesRead);
+                count += bytesRead;
+                ftEnt.seekPtr += bytesRead;
+                size -= bytesRead;
             }
+            return count;
         }
-        return -1;
     }
 
     int write(FileTableEntry ftEnt, byte[] buffer) {
