@@ -24,7 +24,6 @@ public class Directory {
             names.getChars(0, fsize[i], fnames[i], 0);
             offset += maxChars*2;
         }
-
     }
 
     public byte[] directory2bytes() {

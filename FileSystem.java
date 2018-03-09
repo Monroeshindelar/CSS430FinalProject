@@ -4,7 +4,6 @@ public class FileSystem {
     private Directory dir;
     private FileTable fileTable;
 
-    public final static int DEFAULTBLOCK   =  512;
     public final static int SEEK_SET    =  0;
     public final static int SEEK_CUR    =  1;
     public final static int SEEK_END    =  2;
@@ -79,11 +78,11 @@ public class FileSystem {
                 int current = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
                 if(current == -1) break;
 
-                byte[] currentBlock = new byte[DEFAULTBLOCK];
+                byte[] currentBlock = new byte[Disk.blockSize];
                 SysLib.rawread(ftEnt.iNumber, currentBlock);
 
-                int offset = ftEnt.seekPtr % DEFAULTBLOCK;
-                int blocksRemaining = DEFAULTBLOCK - bytesRead;
+                int offset = ftEnt.seekPtr % Disk.blockSize;
+                int blocksRemaining = Disk.blockSize - bytesRead;
                 int fileRemaining = fsize(ftEnt) - ftEnt.seekPtr;
 
                 bytesRead = Math.min(((blocksRemaining < fileRemaining) ? blocksRemaining : fileRemaining), size);
@@ -141,10 +140,10 @@ public class FileSystem {
                         currentBlock = newBlock;
 
                     }
-                    byte[] temp = new byte[DEFAULTBLOCK];
+                    byte[] temp = new byte[Disk.blockSize];
 
-                    int tempPtr = ftEnt.seekPtr % DEFAULTBLOCK;
-                    int numBytes = Math.min((DEFAULTBLOCK-tempPtr), bufferSize);
+                    int tempPtr = ftEnt.seekPtr % Disk.blockSize;
+                    int numBytes = Math.min((Disk.blockSize-tempPtr), bufferSize);
                     System.arraycopy(buffer,numberBytesWritten,temp,tempPtr,numBytes );
                     SysLib.rawwrite(currentBlock, temp);
 
