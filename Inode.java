@@ -1,7 +1,6 @@
 public class Inode {
     private final static int iNodeSize = 32;
     public final static int directSize = 11;
-    public final static int DEFAULTBLOCK   =  512;
 
     public int length; //filesize
     public short count; //# of fds referencing this inode
@@ -18,12 +17,15 @@ public class Inode {
     }
 
     Inode(short iNumber) {
-        byte[] buffer = new byte[iNodeSize];
-        SysLib.rawread(iNumber, buffer);
-        length = SysLib.bytes2int(buffer, 0);
-        count = SysLib.bytes2short(buffer, 4);
-        flag = SysLib.bytes2short(buffer, 6);
-        int offset = 8;
+        byte[] buffer = new byte[Disk.blockSize];
+        SysLib.rawread((iNumber / 16), buffer);
+        int offset = iNumber % 16 * iNodeSize;
+        length = SysLib.bytes2int(buffer, offset);
+        offset += 4;
+        count = SysLib.bytes2short(buffer, offset);
+        offset += 2;
+        flag = SysLib.bytes2short(buffer, offset);
+        offset += 2;
         for(int i = 0; i < directSize; i++) {
             direct[i] = SysLib.bytes2short(buffer, offset);
             offset += 2;
@@ -33,16 +35,47 @@ public class Inode {
 
     int toDisk(short iNumber) {
         byte[] buffer = new byte[iNodeSize];
-        SysLib.int2bytes(length, buffer, 0);
-        SysLib.short2bytes(count, buffer, 4);
-        SysLib.short2bytes(flag, buffer, 6);
-        int offset = 8;
-        for(int i = 0; i < directSize; i++) {
+        byte notSureWhatThisDoes = 0;
+        SysLib.int2bytes(length, buffer, notSureWhatThisDoes);
+        int offset = notSureWhatThisDoes + 4;
+        SysLib.short2bytes(count, buffer, offset);
+        offset += 2;
+        SysLib.short2bytes(flag, buffer, offset);
+        offset += 2;
+
+        int i;
+        for(i = 0; i < directSize; ++i) {
             SysLib.short2bytes(direct[i], buffer, offset);
-            offset = offset + 2;
+            offset += 2;
         }
+
         SysLib.short2bytes(indirect, buffer, offset);
-        return SysLib.rawwrite(iNumber, buffer);
+        offset += 2;
+        int test  = 1 + iNumber / 16;
+        byte[] temp = new byte[512];
+        SysLib.rawread(i, temp);
+        offset = iNumber % 16 * 32;
+        System.arraycopy(buffer, 0, temp, offset, iNodeSize);
+        return SysLib.rawwrite(i, temp);
+
+
+//        byte[] buffer = new byte[iNodeSize];
+//        SysLib.int2bytes(length, buffer, (byte)0);
+//        SysLib.short2bytes(count, buffer, 4);
+//        SysLib.short2bytes(flag, buffer, 6);
+//        int offset = 8;
+//        int i;
+//        for(i = 0; i < directSize; ++i) {
+//            SysLib.short2bytes(direct[i], buffer, offset);
+//            offset += + 2;
+//        }
+//        SysLib.short2bytes(indirect, buffer, offset);
+//        byte[] tempBlock = new byte[BLOCK_SIZE];
+//        int var4 = 1 + iNumber % 16;
+//        int var6 = iNumber % 16 *32;
+//        SysLib.rawread(var4, tempBlock);
+//        System.arraycopy(buffer, 0, tempBlock, var6, iNodeSize);
+//        return SysLib.rawwrite(var4, buffer);
     }
 
     short getIndexBlockNumber() {
@@ -52,18 +85,18 @@ public class Inode {
     boolean setIndexBlock(short indexBlockNumber) {
         if(indirect != -1) return false;
         for(int i = 0; i < direct.length; i++) if(direct[i] == -1) return false;
-        byte[] buffer = new byte[DEFAULTBLOCK];
+        byte[] buffer = new byte[Disk.blockSize];
         for(int i = 0; i < (buffer.length) / 2; i++) SysLib.short2bytes((short)-1, buffer, i*2);
         SysLib.rawwrite(indexBlockNumber, buffer);
         return true;
     }
 
     short findTargetBlock(int offset) {
-        int block = DEFAULTBLOCK / offset;
+        int block = offset / Disk.blockSize;
         if(block < 0) return -1;
         else if(block < directSize) return direct[block];
         else {
-            byte[] buffer = new byte[DEFAULTBLOCK];
+            byte[] buffer = new byte[Disk.blockSize];
             SysLib.rawread(indirect, buffer);
             return SysLib.bytes2short(buffer, (block - 11) * 2);
         }
@@ -72,14 +105,14 @@ public class Inode {
     byte[] freeIndirectBlock() {
         if(indirect == -1) return null;
 
-        byte[] buffer = new byte[DEFAULTBLOCK];
+        byte[] buffer = new byte[Disk.blockSize];
         SysLib.rawread(indirect, buffer);
         indirect = -1;
         return buffer;
     }
 
     int findBlock(int seekptr, short newBlock) {
-        int targetBlock = seekptr / DEFAULTBLOCK;
+        int targetBlock = seekptr / Disk.blockSize;
 
         if (targetBlock < directSize)
         {
@@ -104,7 +137,7 @@ public class Inode {
 
         else
         {
-            byte[] data = new byte[DEFAULTBLOCK];
+            byte[] data = new byte[Disk.blockSize];
             SysLib.rawread(indirect, data);
             int temp = (targetBlock - directSize) * 2;
             if (SysLib.bytes2short(data, temp) > 0)
