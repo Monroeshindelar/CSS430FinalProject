@@ -76,7 +76,6 @@ public class FileTable {
         FileTableEntry ftEnt = new FileTableEntry(inode, iNumber, mode);
         table.addElement(ftEnt);
         return ftEnt;
-
     }
 
     public synchronized boolean ffree(FileTableEntry ftEnt) {

@@ -35,16 +35,11 @@ public class Inode {
 
     int toDisk(short iNumber) {
         byte[] buffer = new byte[iNodeSize];
-        byte notSureWhatThisDoes = 0;
-        SysLib.int2bytes(length, buffer, notSureWhatThisDoes);
-        int offset = notSureWhatThisDoes + 4;
-        SysLib.short2bytes(count, buffer, offset);
-        offset += 2;
-        SysLib.short2bytes(flag, buffer, offset);
-        offset += 2;
-
-        int i;
-        for(i = 0; i < directSize; ++i) {
+        SysLib.int2bytes(length, buffer, 0);
+        SysLib.short2bytes(count, buffer, 4);
+        SysLib.short2bytes(flag, buffer, 6);
+        int offset = 8;
+        for(int i = 0; i < directSize; i++) {
             SysLib.short2bytes(direct[i], buffer, offset);
             offset += 2;
         }
@@ -53,13 +48,10 @@ public class Inode {
         offset += 2;
         int test  = 1 + iNumber / 16;
         byte[] temp = new byte[512];
-        SysLib.rawread(i, temp);
+        SysLib.rawread(directSize, temp);
         offset = iNumber % 16 * 32;
         System.arraycopy(buffer, 0, temp, offset, iNodeSize);
         return SysLib.rawwrite(i, temp);
-
-
-
     }
 
     short getIndexBlockNumber() {
