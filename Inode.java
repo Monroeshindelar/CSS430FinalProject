@@ -34,55 +34,51 @@ public class Inode {
     }
 
     int toDisk(short iNumber) {
-//        if (iNumber < 0 || iNumber >= 64)
-//            return -1;
+        int blockNumber = 1 + iNumber / 16;
+        byte [] data = new byte[Disk.blockSize];
+        SysLib.rawread( blockNumber, data );
+        int offset = ( iNumber % 16 ) * 32;
+
+        // fill the temp data block with the Inode data
+        SysLib.int2bytes( length, data, offset );
+        offset += 4;
+        SysLib.short2bytes( count, data, offset );
+        offset += 2;
+        SysLib.short2bytes( flag, data, offset );
+        offset += 2;
+        for(int i = 0; i < directSize; i++){
+            SysLib.short2bytes( direct[i], data, offset );
+            offset += 2;
+        }
+        SysLib.short2bytes( indirect, data, offset );
+
+        // write this Inode to the disk
+        return SysLib.rawwrite( blockNumber, data );
 //
-//        byte[] inodeData = new byte[iNodeSize]; //First we need to store 'this' inode's data into a byte array
-//        int offset = 0;
-//        SysLib.int2bytes(length, inodeData, offset); //Storing length as 4 bytes
-//        offset += 4;
-//        SysLib.short2bytes(count, inodeData, offset); //Storing count as 2 bytes
-//        offset += 2;
-//        SysLib.short2bytes(flag, inodeData, offset); //Storing flag as 2 bytes
-//        offset += 2;
+//        byte[] var2 = new byte[32];
+//        byte var3 = 0;
+//        SysLib.int2bytes(this.length, var2, var3);
+//        int var6 = var3 + 4;
+//        SysLib.short2bytes(this.count, var2, var6);
+//        var6 += 2;
+//        SysLib.short2bytes(this.flag, var2, var6);
+//        var6 += 2;
 //
-//        for (int i = 0; i < directSize; i++) {
-//            SysLib.short2bytes(direct[i], inodeData, offset); //Storing all direct pointers as 2 bytes
-//            offset += 2;
+//        int var4;
+//        for(var4 = 0; var4 < 11; ++var4) {
+//            SysLib.short2bytes(this.direct[var4], var2, var6);
+//            var6 += 2;
 //        }
 //
-//        SysLib.short2bytes(indirect, inodeData, offset);
-//        int blockNumber = 1 + iNumber / 16; //Address into the correct block
-//        byte[] block = new byte[512];
-//        SysLib.rawread(blockNumber, block);
-//        offset = iNumber % 16 * 32; //Offset into the correct inode in the block
-//        System.arraycopy(inodeData, 0, block, offset, 32); //Create a copy of all 32 bits from inodeData array into the block at the correct inode offset
-//        SysLib.rawwrite(blockNumber, block);
+//        SysLib.short2bytes(this.indirect, var2, var6);
+//        var6 += 2;
+//        var4 = 1 + iNumber / 16;
+//        byte[] var5 = new byte[512];
+//        SysLib.rawread(var4, var5);
+//        var6 = iNumber % 16 * 32;
+//        System.arraycopy(var2, 0, var5, var6, 32);
+//        SysLib.rawwrite(var4, var5);
 //        return 0;
-        byte[] var2 = new byte[32];
-        byte var3 = 0;
-        SysLib.int2bytes(this.length, var2, var3);
-        int var6 = var3 + 4;
-        SysLib.short2bytes(this.count, var2, var6);
-        var6 += 2;
-        SysLib.short2bytes(this.flag, var2, var6);
-        var6 += 2;
-
-        int var4;
-        for(var4 = 0; var4 < 11; ++var4) {
-            SysLib.short2bytes(this.direct[var4], var2, var6);
-            var6 += 2;
-        }
-
-        SysLib.short2bytes(this.indirect, var2, var6);
-        var6 += 2;
-        var4 = 1 + iNumber / 16;
-        byte[] var5 = new byte[512];
-        SysLib.rawread(var4, var5);
-        var6 = iNumber % 16 * 32;
-        System.arraycopy(var2, 0, var5, var6, 32);
-        SysLib.rawwrite(var4, var5);
-        return 0;
     }
 
     short getIndexBlockNumber() {

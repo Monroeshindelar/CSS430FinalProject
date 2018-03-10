@@ -52,7 +52,6 @@ public class FileSystem {
                 return null;
             }
         }
-
         return ftEnt;
     }
 
@@ -70,7 +69,6 @@ public class FileSystem {
     }
 
     int read(FileTableEntry ftEnt, byte[] buffer) {
-        SysLib.cout("fasfgsadrfgfdsg fadkjghkladjsfhg");
         if(ftEnt.mode == "w" || ftEnt.mode == "a") return -1;
         int count = 0;
         int size = buffer.length;
@@ -93,6 +91,7 @@ public class FileSystem {
                 ftEnt.seekPtr += bytesRead;
                 size -= bytesRead;
             }
+            SysLib.cerr("Number of Bytes Read: " + count + "\n");
             return count;
         }
 
@@ -113,18 +112,15 @@ public class FileSystem {
                 {
                     int currentBlock = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
 
-
                     //if block doesn't exist
                     if (currentBlock == -1)
                     {
                         short newBlock = (short) superblock.getFreeBlock();
 
                         int tempSeekPtr = ftEnt.inode.findBlock(ftEnt.seekPtr, newBlock);
-
                         if (tempSeekPtr == -3)
                         {
                             short freeBlock = (short) superblock.getFreeBlock();
-
                             if (!ftEnt.inode.setIndexBlock(freeBlock))
                             {
                                 return -1;
@@ -143,11 +139,11 @@ public class FileSystem {
 
                     }
                     byte[] temp = new byte[Disk.blockSize];
-
                     int tempPtr = ftEnt.seekPtr % Disk.blockSize;
                     int numBytes = Math.min((Disk.blockSize-tempPtr), bufferSize);
                     System.arraycopy(buffer,numberBytesWritten,temp,tempPtr,numBytes );
                     SysLib.rawwrite(currentBlock, temp);
+
 
                     ftEnt.seekPtr += numBytes;
                     numberBytesWritten += numBytes;
