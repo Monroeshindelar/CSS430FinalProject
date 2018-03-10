@@ -27,17 +27,13 @@ class SuperBlock {
 
     public void format(int files) {
         totalInodes = files;
-
         for(short i = 0; i < totalInodes; i++) {
             Inode current = new Inode();
             current.flag = 0;
             current.toDisk(i);
         }
-
         freeList = 2 + totalInodes * 32 / Disk.blockSize;
-
         for(int i = freeList; i < totalBlocks; i++) {
-
             byte[] buffer = new byte[Disk.blockSize];
             for(int j = 0; j < Disk.blockSize; j++) buffer[j] = 0;
             SysLib.int2bytes(i+1, buffer, 0);

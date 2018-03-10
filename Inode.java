@@ -18,7 +18,7 @@ public class Inode {
 
     Inode(short iNumber) {
         byte[] buffer = new byte[Disk.blockSize];
-        SysLib.rawread((iNumber / 16), buffer);
+        SysLib.rawread(1 + (iNumber / 16), buffer);
         int offset = iNumber % 16 * iNodeSize;
         length = SysLib.bytes2int(buffer, offset);
         offset += 4;
