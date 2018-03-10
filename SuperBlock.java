@@ -47,11 +47,13 @@ class SuperBlock {
         if(iNumber != -1) {
             byte[] buffer = new byte[Disk.blockSize];
             SysLib.rawread(iNumber,buffer);
-            SysLib.int2bytes(0,buffer,0);
             freeList = SysLib.bytes2int(buffer, 0);
+            SysLib.int2bytes(0,buffer,0);
+
             SysLib.rawwrite(iNumber, buffer);
         }
         return iNumber;
+
 
     }
 
@@ -64,6 +66,7 @@ class SuperBlock {
         SysLib.rawwrite(blockNumber, buffer);
         freeList = blockNumber;
         return true;
+
     }
 
 }
