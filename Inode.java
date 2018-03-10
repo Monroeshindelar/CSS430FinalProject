@@ -109,13 +109,21 @@ public class Inode {
     }
 
     byte[] freeIndirectBlock() {
-        if(indirect == -1) return null;
+//        if(indirect == -1) return null;
+//
+//        byte[] buffer = new byte[Disk.blockSize];
+//        SysLib.rawread(indirect, buffer);
+//        indirect = -1;
+//        return buffer;
 
-        byte[] buffer = new byte[Disk.blockSize];
-        SysLib.rawread(indirect, buffer);
-        indirect = -1;
-        return buffer;
-
+        if (this.indirect >= 0) {
+            byte[] var1 = new byte[512];
+            SysLib.rawread(this.indirect, var1);
+            this.indirect = -1;
+            return var1;
+        } else {
+            return null;
+        }
     }
 
     int findBlock(int seekptr, short newBlock) {
