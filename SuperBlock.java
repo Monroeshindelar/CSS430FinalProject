@@ -58,15 +58,19 @@ class SuperBlock {
     }
 
     public boolean returnBlock(int blockNumber) {
-        if(blockNumber < 0) return false;
-
-        byte[] buffer = new byte[Disk.blockSize];
-        for(int i = 0; i < buffer.length; i++) buffer[i] = 0;
-        SysLib.int2bytes(blockNumber, buffer, 0);
-        SysLib.rawwrite(blockNumber, buffer);
-        freeList = blockNumber;
+        if(blockNumber < 0 ||  blockNumber > totalBlocks) // Block number outside of boudns
+        {
+            return false;
+        }
+        byte[] data = new byte[Disk.blockSize];           // temporary store data
+        for(int i = 0; i < data.length; i++) //Clear data
+        {
+            data[i] = (byte)0;                            // clear each byte
+        }
+        SysLib.int2bytes(freeList, data,0);           // write to list
+        SysLib.rawwrite(blockNumber, data);               // write to disk
+        freeList = blockNumber; //Freelist head is now parameter block number
         return true;
-
     }
 
 }

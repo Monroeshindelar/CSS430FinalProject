@@ -1,16 +1,22 @@
 import java.util.Vector;
 
 public class FileTable {
+    public final static int UNUSED = 0;
+    public final static int USED = 1;
+    public final static int READ = 2;
+    public final static int WRITE = 3;
+
+
     private Vector table;
     private Directory dir;
 
     public FileTable(Directory directory) {
+
         table = new Vector();
         dir = directory;
     }
 
     public synchronized FileTableEntry falloc(String fileName, String mode) {
-
         short iNumber = -1;
         Inode inode = null;
 
@@ -78,25 +84,16 @@ public class FileTable {
     }
 
     public synchronized boolean ffree(FileTableEntry ftEnt) {
-
-        if (this.table.removeElement(ftEnt)) {
+        if (table.removeElement(ftEnt)) {
             --ftEnt.inode.count;
-            if (ftEnt.inode.flag == 1 || ftEnt.inode.flag == 2)
-            {
-                ftEnt.inode.flag = 0;
-            }
-            else if (ftEnt.inode.flag == 4 || ftEnt.inode.flag == 5)
-            {
-                ftEnt.inode.flag = 3;
-            }
+            if (ftEnt.inode.flag == USED || ftEnt.inode.flag == READ) ftEnt.inode.flag = UNUSED;
+            else if (ftEnt.inode.flag == 4 || ftEnt.inode.flag == 5) ftEnt.inode.flag = WRITE;
 
             ftEnt.inode.toDisk(ftEnt.iNumber);
             ftEnt = null;
             this.notify();
             return true;
-        } else {
-            return false;
-        }
+        } else return false;
     }
 
     public synchronized boolean fempty() {
