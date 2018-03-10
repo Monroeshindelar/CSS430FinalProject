@@ -59,23 +59,7 @@ public class Inode {
         return SysLib.rawwrite(i, temp);
 
 
-//        byte[] buffer = new byte[iNodeSize];
-//        SysLib.int2bytes(length, buffer, (byte)0);
-//        SysLib.short2bytes(count, buffer, 4);
-//        SysLib.short2bytes(flag, buffer, 6);
-//        int offset = 8;
-//        int i;
-//        for(i = 0; i < directSize; ++i) {
-//            SysLib.short2bytes(direct[i], buffer, offset);
-//            offset += + 2;
-//        }
-//        SysLib.short2bytes(indirect, buffer, offset);
-//        byte[] tempBlock = new byte[BLOCK_SIZE];
-//        int var4 = 1 + iNumber % 16;
-//        int var6 = iNumber % 16 *32;
-//        SysLib.rawread(var4, tempBlock);
-//        System.arraycopy(buffer, 0, tempBlock, var6, iNodeSize);
-//        return SysLib.rawwrite(var4, buffer);
+
     }
 
     short getIndexBlockNumber() {

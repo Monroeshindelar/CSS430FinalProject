@@ -93,6 +93,7 @@ public class FileSystem {
             }
             return count;
         }
+
     }
 
     int write(FileTableEntry ftEnt, byte[] buffer) {
@@ -203,14 +204,16 @@ public class FileSystem {
 
     boolean delete(String fileName) {
         //find file
-        Inode current = new Inode(dir.namei(fileName));
+        FileTableEntry ftEnt = open(fileName, "w");
 
-        //if currently being used then do not delete
-        if(current.count > 0) return false;
+        short temp = ftEnt.iNumber;
 
-        //remove from directory
-        dir.ifree(dir.namei(fileName));
-        return true;
+        if(close(ftEnt) && dir.ifree(temp))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     int seek(FileTableEntry ftEnt, int offset, int whence) {
