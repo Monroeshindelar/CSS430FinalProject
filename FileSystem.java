@@ -69,32 +69,59 @@ public class FileSystem {
     }
 
     int read(FileTableEntry ftEnt, byte[] buffer) {
-        if(ftEnt.mode == "w" || ftEnt.mode == "a") return -1;
-        int count = 0;
-        int size = buffer.length;
-        int bytesRead = 0;
-        synchronized(ftEnt) {
-            while(size > 0 && ftEnt.seekPtr < fsize(ftEnt)) {
-                int current = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
-                if(current == -1) break;
+//        if(ftEnt.mode == "w" || ftEnt.mode == "a") return -1;
+//        int count = 0;
+//        int size = buffer.length;
+//        int bytesRead = 0;
+//        synchronized(ftEnt) {
+//            while(size > 0 && ftEnt.seekPtr < fsize(ftEnt)) {
+//                int current = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+//                if(current == -1) break;
+//
+//                byte[] currentBlock = new byte[Disk.blockSize];
+//                SysLib.rawread(ftEnt.iNumber, currentBlock);
+//
+//                int offset = ftEnt.seekPtr % Disk.blockSize;
+//                int blocksRemaining = Disk.blockSize - bytesRead;
+//                int fileRemaining = fsize(ftEnt) - ftEnt.seekPtr;
+//
+//                bytesRead = Math.min(((blocksRemaining < fileRemaining) ? blocksRemaining : fileRemaining), size);
+//                System.arraycopy(currentBlock, offset, buffer, count, bytesRead);
+//                count += bytesRead;
+//                ftEnt.seekPtr += bytesRead;
+//                size -= bytesRead;
+//            }
+//            SysLib.cerr("Number of Bytes Read: " + count + "\n");
+//            return count;
+//        }
 
-                byte[] currentBlock = new byte[Disk.blockSize];
-                SysLib.rawread(ftEnt.iNumber, currentBlock);
+        if (ftEnt.mode != "w" && ftEnt.mode != "a") {
+            int var3 = 0;
+            int var4 = buffer.length;
+            synchronized(ftEnt) {
+                while(var4 > 0 && ftEnt.seekPtr < this.fsize(ftEnt)) {
+                    int var6 = ftEnt.inode.findTargetBlock(ftEnt.seekPtr);
+                    if (var6 == -1) {
+                        break;
+                    }
 
-                int offset = ftEnt.seekPtr % Disk.blockSize;
-                int blocksRemaining = Disk.blockSize - bytesRead;
-                int fileRemaining = fsize(ftEnt) - ftEnt.seekPtr;
+                    byte[] var7 = new byte[512];
+                    SysLib.rawread(var6, var7);
+                    int var8 = ftEnt.seekPtr % 512;
+                    int var9 = 512 - var8;
+                    int var10 = this.fsize(ftEnt) - ftEnt.seekPtr;
+                    int var11 = Math.min(Math.min(var9, var4), var10);
+                    System.arraycopy(var7, var8, buffer, var3, var11);
+                    ftEnt.seekPtr += var11;
+                    var3 += var11;
+                    var4 -= var11;
+                }
 
-                bytesRead = Math.min(((blocksRemaining < fileRemaining) ? blocksRemaining : fileRemaining), size);
-                System.arraycopy(currentBlock, offset, buffer, count, bytesRead);
-                count += bytesRead;
-                ftEnt.seekPtr += bytesRead;
-                size -= bytesRead;
+                return var3;
             }
-            SysLib.cerr("Number of Bytes Read: " + count + "\n");
-            return count;
+        } else {
+            return -1;
         }
-
     }
 
     int write(FileTableEntry ftEnt, byte[] buffer) {
