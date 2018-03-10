@@ -158,9 +158,18 @@ public class Kernel
                      case STDERR:
                         System.out.println( "threaOS: caused read errors" );
                         return ERROR;
+                     default:
+                        if ((myTcb = scheduler.getMyTcb()) != null) {
+                           FileTableEntry temp = myTcb.getFtEnt(param);
+                           if (temp != null) {
+                              return fs.read(temp, (byte[])((byte[])args));
+                           }
+                        }
+
+                        return -1;
                   }
                   // return FileSystem.read( param, byte args[] );
-                  return ERROR;
+
                case WRITE:
                   switch ( param ) {
                      case STDIN:
@@ -172,6 +181,15 @@ public class Kernel
                      case STDERR:
                         System.err.print( (String)args );
                         break;
+                     default:
+                        if ((myTcb = scheduler.getMyTcb()) != null) {
+                           FileTableEntry temp = myTcb.getFtEnt(param);
+                           if (temp != null) {
+                              return fs.write(temp, (byte[])((byte[])args));
+                           }
+                        }
+
+                        return -1;
                   }
                   return OK;
                case CREAD:   // to be implemented in assignment 4
