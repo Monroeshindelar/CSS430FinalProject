@@ -23,63 +23,6 @@ public class FileTable {
         temp.toDisk(iNumber);
         table.add(ftEnt);
         return ftEnt;
-//        short iNumber = -1;
-//        Inode inode = null;
-//
-//        while (true) {
-//            //get inode number from file
-//            iNumber = fileName.equals("/") ? 0 : dir.namei(fileName);
-//
-//            // check if file exists
-//            if (iNumber >= 0) {
-//                inode = new Inode(iNumber);
-//                // if mode is read
-//                if (mode.equals("r")) {
-//                    //if file is being written to
-//                    if (inode.flag != 0 || inode.flag != 1 ) {
-//                        //wait until writing is done
-//                        try {
-//                            wait();
-//                        }
-//                        catch (InterruptedException e) { }
-//                        continue;
-//                    }
-//                    //set flag to read
-//                    inode.flag = 1;
-//                    break;
-//                }
-//                else {
-//                    if (inode.flag == 0 || inode.flag == 1) {
-//                        inode.flag = 3;
-//                        break;
-//                    }
-//                    //wait until writing is done
-//                    else {
-//                        try {
-//                            wait();
-//                        }
-//                        catch (InterruptedException e) { }
-//                    }
-//                }
-//            }
-//            //if mode is read then return a null
-//            if (mode.equals("r")) return null;
-//
-//            //create file
-//            iNumber = dir.ialloc(fileName);
-//            inode = new Inode(iNumber);
-//            //set flag to write
-//            inode.flag = 3;
-//            break;
-//        }
-//
-//        //write inode to disk
-//        inode.count++;
-//        inode.toDisk(iNumber);
-//        //create filetable entry and return
-//        FileTableEntry ftEnt = new FileTableEntry(inode, iNumber, mode);
-//        table.addElement(ftEnt);
-//        return ftEnt;
     }
 
     public synchronized boolean ffree(FileTableEntry e) {

@@ -210,7 +210,12 @@ public class Kernel
                   }
                   return ERROR;
                case SEEK:    // to be implemented in project
-                  return OK;
+                  if((myTcb = scheduler.getMyTcb()) != null) {
+                     int[] arguments = (int[])args;
+                     FileTableEntry ftEnt = myTcb.getFtEnt(param);
+                     if(ftEnt != null) return fs.seek(ftEnt, arguments[0], arguments[1]);
+                  }
+                  return ERROR;
                case FORMAT:  // to be implemented in project
                   if((myTcb = scheduler.getMyTcb()) != null) if(fs.format(param)) return OK;
                   return ERROR;
