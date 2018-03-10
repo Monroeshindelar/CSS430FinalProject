@@ -20,9 +20,9 @@ public class Directory {
             offset += 4;
         }
         for(int i = 0; i < fnames.length; i++) {
-            String names = new String(data, offset, maxChars*2);
+            String names = new String(data, offset, maxChars * 2);
             names.getChars(0, fsize[i], fnames[i], 0);
-            offset += maxChars*2;
+            offset += maxChars * 2;
         }
     }
 
@@ -64,9 +64,12 @@ public class Directory {
 
     public short namei(String filename) {
         for(short i = 0; i < fnames.length; i++) {
-            String current = new String(fnames[i], 0, fsize[i]);
-            if(filename.equals(current)) return i;
+            if (fsize[i] == filename.length()) {
+                String current = new String(fnames[i], 0, fsize[i]);
+                if (filename.equals(current)) return i;
+            }
         }
+
         return -1;
     }
 

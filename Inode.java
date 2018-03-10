@@ -51,7 +51,7 @@ public class Inode {
         SysLib.rawread(directSize, temp);
         offset = iNumber % 16 * 32;
         System.arraycopy(buffer, 0, temp, offset, iNodeSize);
-        return SysLib.rawwrite(directSize, temp);
+        return SysLib.rawwrite(i, temp);
     }
 
     short getIndexBlockNumber() {
