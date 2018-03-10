@@ -70,6 +70,7 @@ public class FileSystem {
     }
 
     int read(FileTableEntry ftEnt, byte[] buffer) {
+        SysLib.cout("fasfgsadrfgfdsg fadkjghkladjsfhg");
         if(ftEnt.mode == "w" || ftEnt.mode == "a") return -1;
         int count = 0;
         int size = buffer.length;

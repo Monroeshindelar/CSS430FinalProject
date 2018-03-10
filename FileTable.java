@@ -37,14 +37,13 @@ public class FileTable {
                     break;
                 }
 
-                if (inode.flag == 0 && inode.flag == 3)
+                if (inode.flag != 0 && inode.flag != 3)
                 {
                     if(inode.flag == 1 || inode.flag==2)
                     {
                         inode.flag = (short)(inode.flag + 3);
                         inode.toDisk(iNumber);
                     }
-                    inode.flag = 3;
 
                     //wait until writing is done
 
@@ -63,9 +62,9 @@ public class FileTable {
 
             //create file
             iNumber = dir.ialloc(fileName);
-            inode = new Inode(iNumber);
+            inode = new Inode();
             //set flag to write
-            inode.flag = 3;
+            inode.flag = 2;
             break;
         }
 

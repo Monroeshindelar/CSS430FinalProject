@@ -214,7 +214,16 @@ public class Kernel
                   }
                   return ERROR;
                case CLOSE:   // to be implemented in project
-                  if((myTcb = scheduler.getMyTcb()) != null) if(fs.close(myTcb.getFtEnt(param))) return OK;
+                  if((myTcb = scheduler.getMyTcb()) != null)
+                  {
+                     FileTableEntry ftEnt = myTcb.getFtEnt(param);
+                     if(ftEnt != null && fs.close(ftEnt))
+                     {
+                        if (myTcb.returnFd(param)!= ftEnt)
+                           return ERROR;
+                        return OK;
+                     }
+                  }
                   return ERROR;
                case SIZE:    // to be implemented in project
                   if((myTcb = scheduler.getMyTcb()) != null)
@@ -229,7 +238,7 @@ public class Kernel
                   return ERROR;
                case SEEK:    // to be implemented in project
                   if((myTcb = scheduler.getMyTcb()) != null) {
-                     int[] arguments = (int[])args;
+                     int[] arguments = (int[])((int[])args );
                      FileTableEntry ftEnt = myTcb.getFtEnt(param);
                      if(ftEnt != null) return fs.seek(ftEnt, arguments[0], arguments[1]);
                   }
