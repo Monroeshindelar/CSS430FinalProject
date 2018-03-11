@@ -11,7 +11,6 @@ public class FileTable {
     private Directory dir;
 
     public FileTable(Directory directory) {
-
         table = new Vector();
         dir = directory;
     }
@@ -30,11 +29,9 @@ public class FileTable {
                 // if mode is read
                 if (mode.equals("r")) {
                     //if file is being written to
-                    if (inode.flag != 0 && inode.flag != 1 ) {
+                    if (inode.flag != UNUSED && inode.flag != USED ) {
                         //wait until writing is done
-                        try {
-                            wait();
-                        }
+                        try { wait(); }
                         catch (InterruptedException e) { }
                         continue;
                     }
@@ -43,29 +40,21 @@ public class FileTable {
                     break;
                 }
 
-                if (inode.flag != 0 && inode.flag != 3)
-                {
-                    if(inode.flag == 1 || inode.flag==2)
-                    {
+                if (inode.flag != UNUSED && inode.flag != WRITE) {
+                    if(inode.flag == USED || inode.flag == READ) {
                         inode.flag = (short)(inode.flag + 3);
                         inode.toDisk(iNumber);
                     }
-
                     //wait until writing is done
-
-                    try
-                    {
-                        wait();
-                    }
+                    try { wait(); }
                     catch (InterruptedException e) { }
                     continue;
                 }
-                inode.flag = 2;
+                inode.flag = READ;
                 break;
             }
             //if mode is read then return a null
             if (mode.equals("r")) return null;
-
             //create file
             iNumber = dir.ialloc(fileName);
             inode = new Inode();
@@ -88,15 +77,9 @@ public class FileTable {
             --ftEnt.inode.count;
             if (ftEnt.inode.flag == USED || ftEnt.inode.flag == READ) ftEnt.inode.flag = UNUSED;
             else if (ftEnt.inode.flag == 4 || ftEnt.inode.flag == 5) ftEnt.inode.flag = WRITE;
-
             ftEnt.inode.toDisk(ftEnt.iNumber);
-            ftEnt = null;
             this.notify();
             return true;
         } else return false;
-    }
-
-    public synchronized boolean fempty() {
-        return table.isEmpty();
     }
 }

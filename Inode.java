@@ -40,49 +40,20 @@ public class Inode {
         int offset = ( iNumber % 16 ) * 32;
 
         // fill the temp data block with the Inode data
-        SysLib.int2bytes( length, data, offset );
+        SysLib.int2bytes(length, data, offset);
         offset += 4;
-        SysLib.short2bytes( count, data, offset );
+        SysLib.short2bytes(count, data, offset);
         offset += 2;
-        SysLib.short2bytes( flag, data, offset );
+        SysLib.short2bytes(flag, data, offset);
         offset += 2;
         for(int i = 0; i < directSize; i++){
-            SysLib.short2bytes( direct[i], data, offset );
+            SysLib.short2bytes(direct[i], data, offset);
             offset += 2;
         }
-        SysLib.short2bytes( indirect, data, offset );
+        SysLib.short2bytes(indirect, data, offset);
 
         // write this Inode to the disk
-        return SysLib.rawwrite( blockNumber, data );
-//
-//        byte[] var2 = new byte[32];
-//        byte var3 = 0;
-//        SysLib.int2bytes(this.length, var2, var3);
-//        int var6 = var3 + 4;
-//        SysLib.short2bytes(this.count, var2, var6);
-//        var6 += 2;
-//        SysLib.short2bytes(this.flag, var2, var6);
-//        var6 += 2;
-//
-//        int var4;
-//        for(var4 = 0; var4 < 11; ++var4) {
-//            SysLib.short2bytes(this.direct[var4], var2, var6);
-//            var6 += 2;
-//        }
-//
-//        SysLib.short2bytes(this.indirect, var2, var6);
-//        var6 += 2;
-//        var4 = 1 + iNumber / 16;
-//        byte[] var5 = new byte[512];
-//        SysLib.rawread(var4, var5);
-//        var6 = iNumber % 16 * 32;
-//        System.arraycopy(var2, 0, var5, var6, 32);
-//        SysLib.rawwrite(var4, var5);
-//        return 0;
-    }
-
-    short getIndexBlockNumber() {
-        return indirect;
+        return SysLib.rawwrite(blockNumber, data);
     }
 
     boolean setIndexBlock(short indexBlockNumber) {
@@ -109,64 +80,38 @@ public class Inode {
     }
 
     byte[] freeIndirectBlock() {
-        if(indirect == -1) return null;
-
-        byte[] buffer = new byte[Disk.blockSize];
-        SysLib.rawread(indirect, buffer);
-        indirect = -1;
-        return buffer;
-//
-//        if (this.indirect >= 0) {
-//            byte[] var1 = new byte[512];
-//            SysLib.rawread(this.indirect, var1);
-//            this.indirect = -1;
-//            return var1;
-//        } else {
-//            return null;
-//        }
+        if (this.indirect >= 0) {
+            byte[] var1 = new byte[512];
+            SysLib.rawread(this.indirect, var1);
+            this.indirect = -1;
+            return var1;
+        } else return null;
     }
 
     int findBlock(int seekptr, short newBlock) {
         int targetBlock = seekptr / Disk.blockSize;
 
-        if (targetBlock < directSize)
-        {
-            if (direct[targetBlock] >= 0)
-            {
-                return -1;
-            }
-            else if (targetBlock > 0 && direct[targetBlock - 1] == -1 )
-            {
-                return -2;
-            }
-            else
-            {
+        if (targetBlock < directSize) {
+            if (direct[targetBlock] >= 0) return -1;
+            else if (targetBlock > 0 && direct[targetBlock - 1] == -1 ) return -2;
+            else {
                 direct[targetBlock] = newBlock;
                 return 0;
             }
         }
-        else if (indirect < 0)
-        {
-            return -3;
-        }
-
-        else
-        {
+        else if (indirect < 0) return -3;
+        else {
             byte[] data = new byte[Disk.blockSize];
             SysLib.rawread(indirect, data);
             int temp = (targetBlock - directSize) * 2;
-            if (SysLib.bytes2short(data, temp) > 0)
-            {
+            if (SysLib.bytes2short(data, temp) > 0) {
                 return -1;
-            }
-            else
-            {
+            } else {
                 SysLib.short2bytes(newBlock, data, temp);
                 SysLib.rawwrite(this.indirect, data);
                 return 0;
             }
         }
-
     }
 }
 

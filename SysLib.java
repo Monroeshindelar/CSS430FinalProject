@@ -138,7 +138,6 @@ public class SysLib {
 
 
     public static int seek(int fd, int offset, int whence)  {
-
         int[] temp = new int[]{offset, whence};
         return Kernel.interrupt(1,Kernel.SEEK, fd, temp);
     }
